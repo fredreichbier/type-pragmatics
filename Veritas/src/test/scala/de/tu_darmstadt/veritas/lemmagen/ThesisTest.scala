@@ -38,7 +38,7 @@ class ThesisTest extends FunSuite {
     outputPrettyPrinter.flush()
   }
 
-  /*
+
   test("lemma oracle") {
     val file = new File("src/test/scala/de/tu_darmstadt/veritas/lemmagen/ThesisExampleSpec2.scala")
     val problem = new Problem(file)
@@ -53,7 +53,18 @@ class ThesisTest extends FunSuite {
       }
       println(s"${swLemma.name}: $status")
     }
-  }*/
+  }
+
+  test("functions w/ properties") {
+    val file = new File("src/test/scala/de/tu_darmstadt/veritas/scalaspl/SQLSpec.scala")
+    val problem = new Problem(file)
+    val funcs = problem.dsk.progressProperties.keySet ++ problem.dsk.preservationProperties.keySet
+    for(func <- funcs) {
+      println(func.signature.name)
+      println("=" * func.signature.name.length)
+      println()
+    }
+  }
 /*
   test("static functions") {
     val file = new File("src/test/scala/de/tu_darmstadt/veritas/scalaspl/SQLSpec.scala")
@@ -193,19 +204,21 @@ class ThesisTest extends FunSuite {
   }
 
   val Combinations = Seq(
-    ("projectTable", "welltypedtable"),
+    //("findCol", "sameLength")
+      ("projectCols", "sameLength")
+    /*("projectTable", "welltypedtable"),
     ("rawUnion", "welltypedRawtable"),
     ("filterTable", "welltypedtable"),
     ("filterRows", "welltypedRawtable"),
     ("dropFirstColRaw", "welltypedRawtable"),
-    ("projectCols", "welltypedRawtable"),
+    ("projectCols", "welltypedRawtable"),*/
   )
   for((funcName, predName) <- Combinations) {
     test(s"${funcName} / ${predName}") {
       val file = new File("src/test/scala/de/tu_darmstadt/veritas/scalaspl/SQLSpec.scala")
       val problem = new Problem(file)
       val func = problem.dsk.lookupByFunName(problem.dsk.dynamicFunctions, funcName).get
-      val pred = problem.dsk.lookupByFunName(problem.dsk.staticFunctions, predName).get
+      val pred = problem.dsk.lookupByFunName(problem.dsk.dynamicFunctions ++ problem.dsk.staticFunctions, predName).get
       val strat = new PreservationGenerator(problem, func, pred)
       val lemmas = strat.generate()
       println(s"===== ${lemmas.size} lemmas!")

@@ -30,6 +30,30 @@ class PreservationGenerator(val problem: Problem, function: FunctionDef, predica
 
   def generateBase(): Lemma = {
     // --------------------
+    // [predicate]([t_1], [t_2])
+    val outType = function.successfulOutType
+    // [producer]([], ...) =  []
+    // producer arguments can be fresh or bound with matching types
+    val outVar :: inVars = Assignments.generateSimpleSingle(outType +: function.inTypes)
+    val matchingInVars = inVars.filter(_.sortType == outType)
+    require(matchingInVars.size == 1)
+    val inVar = matchingInVars.head
+    // the success variable can be any of the arguments of ``predicate``, with matching types
+    val relationConstraints = Seq(Constraint.fixed(inVar), Constraint.fixed(outVar))
+    val predicateArgs = Assignments.generate(relationConstraints).head
+    val invocationExp = FunctionExpApp(predicate.name, Assignments.wrapMetaVars(predicateArgs))
+    val judgment = FunctionExpJudgment(invocationExp)
+    val baseLemma = new Lemma(s"${function.name}${predicate.name}Preservation", Seq(), Seq(judgment))
+    // we find all inVars with matching type
+    //val matchingInVars = inVars.filter(_.sortType == outType)
+    // for each matching in var, add a Predicate refinement
+    var lemma = baseLemma
+    val r = Refinement.SuccessfulApplication(function, Assignments.wrapMetaVars(inVars), outVar)
+    lemma = r.refine(problem, lemma).getOrElse(lemma)
+    lemma
+  }
+  /*def generateBase(): Lemma = {
+    // --------------------
     // [predicate]([], ...)
     val outType = function.successfulOutType
     // [producer]([], ...) =  []
@@ -58,7 +82,7 @@ class PreservationGenerator(val problem: Problem, function: FunctionDef, predica
       lemma = refinement.refine(problem, lemma).getOrElse(lemma)
     }
     lemma
-  }
+  }*/
 
   def restrictableVariables(lemma: Lemma): Set[MetaVar] = lemma.boundVariables.filterNot(_.sortType == termType)
   def preVariables(lemma: Lemma): Set[MetaVar] = lemma.boundVariables -- postVariables(lemma)

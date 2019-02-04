@@ -168,11 +168,19 @@ object SQLSpec extends ScalaSPLSpecification {
     case someRawTable(rt) => rt
   }
 
+  def len(rt: RawTable): nat = rt match {
+    case tempty() => zero()
+    case tcons(_, rest) => succ(len(rest))
+  }
+
   @Dynamic
-  def sameLength(rt1: RawTable, rt2: RawTable): Boolean = (rt1, rt2) match {
+  /*def sameLength(rt1: RawTable, rt2: RawTable): Boolean = (rt1, rt2) match {
     case (tempty(), tempty()) => true
     case (tcons(_, tll), tcons(_, tlr)) => sameLength(tll, tlr)
     case (_, _) => false
+  }*/
+  def sameLength(rt1: RawTable, rt2: RawTable): Boolean = (rt1, rt2) match {
+    case (rt1r, rt2r) => len(rt1r) == len(rt2r)
   }
 
   //attaches a raw table with one column to the front of another raw table

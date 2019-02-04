@@ -680,7 +680,7 @@ object SQLSpec2 extends ScalaSPLSpecification {
     require(projectTable(sel, t) == someTable(t2))
   } ensuring !welltypedtable(tt2, t2)
 */
-  @Property
+  /*@Property
   def P1(sel: Select, t: Table, t2: Table, tt: TType, a: Name, al: AttrL): Unit = {
     require(welltypedtable(tt, t))
     require(projectTable(sel, t) == someTable(t2))
@@ -718,7 +718,7 @@ object SQLSpec2 extends ScalaSPLSpecification {
     require(welltypedtable(tt, t))
     require(projectTable(sel, t) == someTable(t2))
     require(tt != tt2)
-  } ensuring !welltypedtable(tt2, t2)
+  } ensuring !welltypedtable(tt2, t2)*/
 
 /*
   @Property
@@ -861,4 +861,20 @@ object SQLSpec2 extends ScalaSPLSpecification {
     require(welltypedRawtable(tt, rt2))
     require(rawIntersection(rt1, rt2) == result)
   } ensuring !welltypedRawtable(tt, result)*/
+
+  def len(rt: RawTable): nat = rt match {
+    case tempty() => zero()
+    case tcons(_, rest) => succ(len(rest))
+  }
+
+
+  @Property
+  def PC1(tt: TType, tt2: TType, al1: AttrL, al2: AttrL, rt: RawTable, rt2: RawTable): Unit = {
+    require(projectCols(al1, al2, rt) == someRawTable(rt2))
+  } ensuring len(rt) == len(rt2)
+
+  @Property
+  def PC1_NEG(tt: TType, tt2: TType, al1: AttrL, al2: AttrL, rt: RawTable, rt2: RawTable): Unit = {
+    require(projectCols(al1, al2, rt) == someRawTable(rt2))
+  } ensuring len(rt) != len(rt2)
 }
